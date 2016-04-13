@@ -68,7 +68,7 @@ int main()
             make_pair("selection sort", &selection_sort ),
             make_pair("quicksort", &quick_sort ),
             make_pair("quick inplace", &quick_sort_inplace ),
-            make_pair("merge", &merge_sort ) };
+            make_pair("merge sort", &merge_sort ) };
 
     set<string> working;
     for( auto i : sortingAlgorithms ) { working.insert( i.first ); }
