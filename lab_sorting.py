@@ -37,13 +37,18 @@ def merge_sort( sequence ):
 if __name__ == '__main__':
     import random, copy, sys
 
-    sortingAlgorithms = {'bubblesort': bubble_sort,
-                        'selection sort': selection_sort,
-                        'quicksort': quick_sort,
-                        'quick inplace': quick_sort_inplace,
-                        'merge sort': merge_sort}
-    worked = set(sortingAlgorithms.keys())
+    class Test(object):
+        def __init__(self, n, f ):
+            self.name = n
+            self.function = f
+            self.success = False
 
+    sortingAlgorithms = [ Test('bubblesort', bubble_sort),
+                          Test('selection sort', selection_sort),
+                          Test('quicksort', quick_sort),
+                          Test('quick inplace', quick_sort_inplace),
+                          Test('merge sort', merge_sort)]
+    
     # ==============================================
     #    This is the small collection of numbers test
     # ============================================== 
@@ -58,22 +63,16 @@ if __name__ == '__main__':
     smallCorrect = sorted( smallNumbers )
     print( 'correctly sorted:', smallCorrect )
 
-    for name, function in sortingAlgorithms.items():
-        result = function( copy.copy(smallNumbers) )
-        print( '%s:' % name.rjust(16), result )
+    for test in sortingAlgorithms:
+        result = test.function( copy.copy(smallNumbers) )
+        print( '%s:' % test.name.rjust(16), result )
 
-        # we're going to remove the names of the ones that don't work rather than 
-        #    add the ones that do work in case it fails the first test but passes the
-        #    second 
-        if result != smallCorrect:
-            worked.discard( name )
+        # record if the test was a success
+        test.success = result == smallCorrect
 
-    for name in sortingAlgorithms.keys():
-        if name in worked:
-            print( '%s worked' % name )
-        else:
-            print( '%s failed' % name )
-
+    for test in sortingAlgorithms:
+        print( test.name, "worked" if test.success else "failed" )
+        
     print()
 
     # ==============================================
@@ -87,16 +86,15 @@ if __name__ == '__main__':
     # sort the big numbers
     bigCorrect = sorted( bigNumbers )
 
-    for name, function in sortingAlgorithms.items():
-        result = function(bigNumbers)
+    for test in sortingAlgorithms:
+        if not test.success:
+            continue
 
-        if result != bigCorrect:
-            worked.discard( name )
+        result = test.function(bigNumbers)
 
-    for name in sortingAlgorithms.keys():
-        if name in worked:
-            print( '%s passed' % name )
-        else:
-            print( '%s failed' % name )    
+        test.sucess = result == bigCorrect
 
-    sys.exit( len(worked) != len(sortingAlgorithms) )
+    for test in sortingAlgorithms:
+        print( test.name, "worked" if test.success else "failed" )
+
+    sys.exit( len([ test for test in sortingAlgorithms if test.success ]) )

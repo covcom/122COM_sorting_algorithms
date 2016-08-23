@@ -63,26 +63,26 @@ string vec_to_str( vector<T>& sequence )
 
 int main()
 {
-    vector< pair< string, vector<int>(*)(vector<int>) > > sortingAlgorithms { 
-            make_pair("bubblesort", &bubble_sort ),
-            make_pair("selection sort", &selection_sort ),
-            make_pair("quicksort", &quick_sort ),
-            make_pair("quick inplace", &quick_sort_inplace ),
-            make_pair("merge sort", &merge_sort ) };
+    struct Test
+    {
+        string name;
+        vector<int>(*function)(vector<int>);
+        bool success;
+    };
 
-    set<string> working;
-    for( auto i : sortingAlgorithms ) { working.insert( i.first ); }
+    vector< Test > sortingAlgorithms {
+            {"bubblesort", &bubble_sort, false },
+            {"selection sort", &selection_sort, false },
+            {"quicksort", &quick_sort, false },
+            {"quick inplace", &quick_sort_inplace, false },
+            {"merge sort", &merge_sort, false }};
 
     /* ==============================================
          This is the small collection of numbers test
        ============================================== */
     // generate 10 random numbers between -100 and 100 so we can see that it's working
-    vector<int> smallNumbers, smallCorrect;
-    smallNumbers.resize(10);
-    for( int& i : smallNumbers )
-    {
-        i = rand() % 200 -100;
-    }
+    vector<int> smallNumbers(10), smallCorrect;
+    generate( smallNumbers.begin(), smallNumbers.end(), []{ return rand()%200-100; } );
     
     // print out the small numbers
     cout << "SMALL SEQUENCE TEST" << endl;
@@ -93,31 +93,22 @@ int main()
     sort( smallCorrect.begin(), smallCorrect.end() );
     cout << setw(16) << "correctly sorted: " << vec_to_str( smallCorrect ) << endl;    
 
-    for( auto i : sortingAlgorithms )
+    for( Test &t : sortingAlgorithms )
     {
-        vector<int>result = i.second( smallNumbers );
+        // run our test numbers through the sorting algorithm and save the results
+        vector<int>result = t.function( smallNumbers );
 
-        cout << setw(16) << i.first << ": " << vec_to_str( result ) << endl;
+        // print the results
+        cout << setw(16) << t.name << ": " << vec_to_str( result ) << endl;
 
-        /* we're going to remove the names of the ones that don't work rather than 
-            add the ones that do work in case it fails the first test but passes the
-            second */
-        if( result != smallCorrect )
-        {
-            working.erase( i.first );    
-        }
+        // record if the test was a successs
+        t.success = result == smallCorrect;
     }
 
-    for( auto i : sortingAlgorithms )
+    // print which tests passed and which failed
+    for( Test &t : sortingAlgorithms )
     {
-        if( working.find(i.first) != working.end() )
-        {
-            cout << i.first << " worked" << endl;
-        }
-        else
-        {
-            cout << i.first << " failed" << endl;
-        }
+        cout << t.name << ( t.success ? " worked" : " failed" ) << endl;
     }
 
     cout << endl;
@@ -125,13 +116,9 @@ int main()
     /* ==============================================
         This is the big collection of numbers test
        ============================================== */
-    // generate 5000 random numbers so we can profile our code
-    vector<int> bigNumbers, bigCorrect;
-    bigNumbers.resize(10000);
-    for( int& i : bigNumbers )
-    {
-        i = rand();
-    }
+    // generate 10000 random numbers so we can profile our code
+    vector<int> bigNumbers(10000), bigCorrect;
+    generate( bigNumbers.begin(), bigNumbers.end(), rand );
 
     cout << "BIG SEQUENCE TEST" << endl;
 
@@ -139,27 +126,20 @@ int main()
     bigCorrect = bigNumbers;
     sort( bigCorrect.begin(), bigCorrect.end() );
 
-    for( auto i : sortingAlgorithms )
+    for( Test &t : sortingAlgorithms )
     {
-        vector<int> result = i.second( bigNumbers );
+        if( !t.success )
+            continue; 
 
-        if( result != bigCorrect )
-        {
-            working.erase( i.first );
-        }
+        vector<int> result = t.function( bigNumbers );
+
+        t.success = result == bigCorrect;
     }
 
-    for( auto i : sortingAlgorithms )
+    for( Test &t : sortingAlgorithms )
     {
-        if( working.find(i.first) != working.end() )
-        {
-            cout << i.first << " worked" << endl;
-        }
-        else
-        {
-            cout << i.first << " failed" << endl;
-        }
+        cout << t.name << ( t.success ? " worked" : " failed" ) << endl;
     }
 
-    return sortingAlgorithms.size() != working.size();
+    return count_if( sortingAlgorithms.begin(), sortingAlgorithms.end(), [](Test &t){ return !t.success; } );
 }
